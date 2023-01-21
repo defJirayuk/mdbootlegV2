@@ -2,7 +2,7 @@ import { Layout } from 'antd';
 import SiderBar from '../../layout/sider';
 import HeaderBar from '../../layout/header';
 import FooterBar from '../../layout/footer';
-import ProductList from './list'
+import ProductList from './list';
 const Product = () => {
     const { Content } = Layout;
     return (
