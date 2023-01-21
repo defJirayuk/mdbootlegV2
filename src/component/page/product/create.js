@@ -1,49 +1,67 @@
-import { storage } from "../../firebase/firebaseConfig";
-import { ref, uploadBytes,getDownloadURL } from "firebase/storage";
-import { Row, Input, Button, Image } from "antd"
-import { UploadOutlined } from '@ant-design/icons';
-import { useState, useEffect } from "react";
+import { Row, Input, Button, Form, InputNumber, Col, Typography, Alert } from "antd";
+import { useState } from "react";
+import ModalAddImage from "./component/modalAddColorImage";
+import CardColor from "./component/cardColor";
+import _ from "lodash";
 
 const ProductCreate = () => {
-    const [fileImage, setFileImage] = useState()
-    const [preview, setPreview] = useState()
-    const [urlPic, setUrl] = useState()
+    const { Text } = Typography;
+    const [colorImage, setColorImage] = useState();
+    const [notName, setNotName] = useState(false);
 
-    useEffect(() => {
-        if (!fileImage) {
-            setPreview(undefined)
+    const createProduct = async (e) => {
+        console.log(e);
+        if (_.isEmpty(e.P_name)) {
+            setNotName(true)
             return
         }
-        const objectUrl = URL.createObjectURL(fileImage)
-        setPreview(objectUrl)
-        return () => URL.revokeObjectURL(objectUrl)
-    }, [fileImage])
-
-    const onSelectFile = e => {
-        if (!e.target.files || e.target.files.length === 0) {
-            setFileImage(undefined)
-            return
-        }
-        setFileImage(e.target.files[0])
     }
-    const uploadImage = () => {
-        if (!fileImage) return;
-        const imageRef = ref(storage, `product/${fileImage.name}`);
-        uploadBytes(imageRef, fileImage).then((data => {
-            console.log(data);
-            getDownloadURL(imageRef).then((url)=>{
-                setUrl(url)
-            })
-        }))
-    }
-    console.log(urlPic);
     return (
-        <Row>
-            <Input id="inputFile" type="file" onChange={(e) => { onSelectFile(e) }} />
-            {preview ?
-                <Image width={200} src={preview} preview={false} />
-                : null}
-            <Button onClick={() => { uploadImage() }}>add</Button>
+        <Row style={{ width: '100%' }}>
+            <Col span={24}>
+                <Form layout='vertical' onFinish={createProduct}>
+                    <Form.Item
+                        label={"Name Product"}
+                        name={"P_name"}
+                    >
+                        <Input onChange={()=>{setNotName(false)}} />
+                    </Form.Item>
+                    {notName ?
+                        <Alert message="Please Enter Product Name I SUS" type="error" showIcon />
+                        :
+                        null
+                    }
+                    <Form.Item
+                        label={"Price"}
+                        name={"P_price"}
+                    >
+                        <InputNumber min={0} />
+                    </Form.Item>
+                    <Form.Item
+                        label={"Tun"}
+                        name={"P_tun"}
+                    >
+                        <InputNumber min={0} />
+                    </Form.Item>
+                    <Row>
+                        <Col span={12}>
+                            <Text>Image</Text>
+                        </Col>
+                        <Col span={12} style={{ textAlign: 'end' }}>
+                            <ModalAddImage setColorImage={setColorImage} colorImage={colorImage} />
+                        </Col>
+                    </Row>
+                    {_.isEmpty(colorImage) ?
+                        null :
+                        <CardColor />
+                    }
+                    <Button
+                        htmlType="submit"
+                    >
+                        CREATE
+                    </Button>
+                </Form>
+            </Col>
         </Row>
     )
 }

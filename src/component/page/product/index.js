@@ -17,6 +17,7 @@ const Product = () => {
                 <Content
                     style={{
                         margin: '0 16px',
+                        padding:'20px'
                     }}
                 >
                     <ProductList />
