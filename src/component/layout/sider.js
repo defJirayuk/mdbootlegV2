@@ -1,8 +1,8 @@
-import { FileOutlined, AreaChartOutlined, UserOutlined, SkinFilled, TeamOutlined } from '@ant-design/icons';
+import { AreaChartOutlined, SkinFilled } from '@ant-design/icons';
 import { useState } from 'react';
 import { Layout, Menu, Grid } from 'antd';
 import { useNavigate } from 'react-router-dom';
-const SiderBar = ({selectPath}) => {
+const SiderBar = ({ selectPath }) => {
     const { Sider } = Layout;
     const [collapsed, setCollapsed] = useState(false);
     const breakpoint = Grid.useBreakpoint();
@@ -27,14 +27,18 @@ const SiderBar = ({selectPath}) => {
     }
     const items = [
         getItem('Dashboard', 'dashboard', <AreaChartOutlined />),
-        getItem('Product', 'product', <SkinFilled />),
-        getItem('User', 'sub1', <UserOutlined />, [
-            getItem('Tom', '3'),
-            getItem('Bill', '4'),
-            getItem('Alex', '5'),
+        getItem('Manage Product', 'productManage', <SkinFilled />, [
+            getItem('product', 'product'),
+            // getItem('Bill', '4'),
+            // getItem('Alex', '5'),
         ]),
-        getItem('Team', 'sub2', <TeamOutlined />, [getItem('Team 1', '6'), getItem('Team 2', '8')]),
-        getItem('Files', '9', <FileOutlined />),
+        // getItem('User', 'sub1', <UserOutlined />, [
+        //     getItem('Tom', '3'),
+        //     getItem('Bill', '4'),
+        //     getItem('Alex', '5'),
+        // ]),
+        // getItem('Team', 'sub2', <TeamOutlined />, [getItem('Team 1', '6'), getItem('Team 2', '8')]),
+        // getItem('Files', '9', <FileOutlined />),
     ];
     const goPage = (value) => {
         if (value.key === "dashboard") {
@@ -51,6 +55,7 @@ const SiderBar = ({selectPath}) => {
             onCollapse={(collapsed) => setCollapsed(collapsed)}
             collapsedWidth={isMobile ? 0 : 80}
             breakpoint="lg"
+            width={250}
             style={isMobile ? antLayoutSiderMobile : antLayoutSider}
         >
             <div
@@ -63,6 +68,7 @@ const SiderBar = ({selectPath}) => {
             <Menu
                 theme="dark"
                 defaultSelectedKeys={[`${selectPath}`]}
+                defaultOpenKeys={[`${selectPath === 'product' ? "productManage" : null}`]}
                 mode="inline"
                 items={items}
                 onClick={(e) => { goPage(e); }}

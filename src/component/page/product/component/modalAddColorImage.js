@@ -7,13 +7,6 @@ import _ from "lodash";
 import moment from "moment"
 
 const ModalAddImage = ({ colorImage, setColorImage }) => {
-    const { Option } = Select;
-    const { Text } = Typography;
-    const [fileImage, setFileImage] = useState()
-    const [preview, setPreview] = useState()
-    const [openModal, setOpenModal] = useState(false)
-    const [notName, setNotName] = useState(false);
-    const [notImg, setNotImg] = useState(false);
     const shirtData = [
         {
             color: 'black',
@@ -30,6 +23,14 @@ const ModalAddImage = ({ colorImage, setColorImage }) => {
             id: '3'
         }
     ]
+    const { Option } = Select;
+    const { Text } = Typography;
+    const [form] = Form.useForm();
+    const [fileImage, setFileImage] = useState()
+    const [preview, setPreview] = useState()
+    const [openModal, setOpenModal] = useState(false)
+    const [notName, setNotName] = useState(false);
+    const [notImg, setNotImg] = useState(false);
     useEffect(() => {
         if (!fileImage) {
             setPreview(undefined)
@@ -44,6 +45,10 @@ const ModalAddImage = ({ colorImage, setColorImage }) => {
         return () => URL.revokeObjectURL(objectUrl)
     }, [fileImage])
 
+    const resetForm = () => {
+        form.resetFields();
+    };
+
     const onSelectFile = e => {
         setNotImg(false)
         if (!e.target.files || e.target.files.length === 0) {
@@ -52,6 +57,7 @@ const ModalAddImage = ({ colorImage, setColorImage }) => {
         }
         setFileImage(e.target.files[0])
     }
+
     const uploadImage = (e) => {
         if (e.P_color && fileImage && preview) {
             const findColor = shirtData.find(sd => sd.id === e.P_color)
@@ -64,18 +70,23 @@ const ModalAddImage = ({ colorImage, setColorImage }) => {
                         imageUrl: url
                     }
                     if (colorImage) {
-                        const newdata = _.concat(colorImage, [data])
+                        const newdata = _.concat(colorImage, data)
                         setColorImage(newdata)
+                        resetForm()
+                        setPreview()
+                        setOpenModal(false)
                         return
                     } else {
-                        setColorImage(data)
+                        setColorImage([data])
+                        resetForm()
+                        setPreview()
+                        setOpenModal(false)
                         return
                     }
                 })
             })
         } else {
             if (_.isEmpty(fileImage) || _.isEmpty(preview)) {
-                debugger
                 setNotImg(true)
             };
             if (_.isEmpty(e.P_color)) {
@@ -83,6 +94,7 @@ const ModalAddImage = ({ colorImage, setColorImage }) => {
             }
         }
     }
+
     const closeModal = () => {
         setOpenModal(false)
     }
@@ -100,14 +112,20 @@ const ModalAddImage = ({ colorImage, setColorImage }) => {
             >
                 <Row style={{ width: '100%' }}>
                     <Col span={24}>
-                        <Form onFinish={uploadImage} layout='vertical'>
+                        <Form onFinish={uploadImage} layout='vertical' form={form}>
                             <Form.Item
                                 label={"Color"}
                                 name={"P_color"}
                             >
                                 <Select onChange={() => { setNotName(false) }}>
                                     {shirtData.map(item => {
-                                        return <Option value={item.id}>{item.color}</Option>
+                                        const selected = _.intersectionBy(shirtData, colorImage, 'color');
+                                        const findColor = _.intersectionBy(selected, [item], 'color');
+                                        if (findColor.length !== 0) {
+                                            return <Option disabled value={item.id}>{item.color}</Option>
+                                        } else {
+                                            return <Option value={item.id}>{item.color}</Option>
+                                        }
                                     })}
                                 </Select>
                             </Form.Item>
@@ -116,7 +134,12 @@ const ModalAddImage = ({ colorImage, setColorImage }) => {
                                 :
                                 null
                             }
-                            <Input id="inputFile" type="file" onChange={(e) => { onSelectFile(e) }} />
+                            <Form.Item
+                                label={"image"}
+                                name={"P_image"}
+                            >
+                                <Input id="inputFile" type="file" onChange={(e) => { onSelectFile(e) }} />
+                            </Form.Item>
                             {preview ?
                                 <Row style={{ padding: '10px', border: '1px solid #1d1d1d', marginTop: '10px' }}>
                                     <Col span={7}>
