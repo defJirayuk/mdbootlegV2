@@ -102,6 +102,7 @@ const ModalAddImage = ({ colorImage, setColorImage }) => {
         <>
             <Button
                 onClick={() => { setOpenModal(true) }}
+                disabled={colorImage?.length === 3 ? true : false}
             >
                 +ADD
             </Button>

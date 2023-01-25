@@ -16,13 +16,15 @@ const TitleProduct = ({ setPage, page }) => {
                 <Text
                     style={{
                         fontSize: '30px',
-                        fontWeight: '700'
+                        fontWeight: '700',
+                        cursor: 'default'
                     }}
                 >
                     {page === 0 ?
                         "Product"
-                        :
-                        "Product Create"
+                        : page === 1 ?
+                            "Product Create"
+                            : "Product Update"
                     }
                 </Text>
             </Col>
