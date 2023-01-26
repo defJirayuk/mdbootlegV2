@@ -29,7 +29,7 @@ const SiderBar = ({ selectPath }) => {
         getItem('Dashboard', 'dashboard', <AreaChartOutlined />),
         getItem('Manage Product', 'productManage', <SkinFilled />, [
             getItem('product', 'product'),
-            // getItem('Bill', '4'),
+            getItem('image Firebase', 'firebase'),
             // getItem('Alex', '5'),
         ]),
         // getItem('User', 'sub1', <UserOutlined />, [
@@ -68,7 +68,7 @@ const SiderBar = ({ selectPath }) => {
             <Menu
                 theme="dark"
                 defaultSelectedKeys={[`${selectPath}`]}
-                defaultOpenKeys={[`${selectPath === 'product' ? "productManage" : null}`]}
+                defaultOpenKeys={[`${selectPath === 'product' || selectPath === 'firebase' ?  "productManage" : null}`]}
                 mode="inline"
                 items={items}
                 onClick={(e) => { goPage(e); }}

@@ -33,8 +33,6 @@ const ProductList = () => {
             setProduct(addColorData);
         }
     }
-
-    console.log(product);
     return (
         <>
             <TitleProduct setPage={setPage} page={page} />

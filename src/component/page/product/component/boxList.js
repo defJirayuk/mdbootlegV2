@@ -23,7 +23,7 @@ const BoxList = ({ productData, setPage, setEditData }) => {
                 <Text className="textBodyTable">{productData.P_name}</Text>
             </Col>
             <Col span={3} style={{ paddingTop: '18px' }}>
-                <Text className="textBodyTable">{productData.P_price}</Text>
+                <Text className="textBodyTable">{Number(productData.P_price).toLocaleString()}</Text>
             </Col>
             <Col span={4} style={{ paddingTop: '18px' }}>
                 {productData.productColor.map((item, index) => {

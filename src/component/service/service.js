@@ -64,6 +64,11 @@ export function updateProduct(param, id) {
     return axiosMethodPut(path, param);
 };
 
+export function deleteProductColor(param) {
+    let path = '/productcolor/deleteProductColor';
+    return axiosMethodPost(path, param);
+};
+
 
 export function addLot(param) {
     let path = '/lot/addLot';

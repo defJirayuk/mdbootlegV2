@@ -9,6 +9,7 @@ import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 const ProductEdit = ({ editData, setEditData, setCreating, creating }) => {
     const { Text } = Typography;
     const [colorImage, setColorImage] = useState([]);
+    const [backupImage, setBackupImage] = useState([]);
     const [notName, setNotName] = useState(false);
     const [createLoading, setCreateLoading] = useState(false);
     const [status, setStatus] = useState();
@@ -17,7 +18,7 @@ const ProductEdit = ({ editData, setEditData, setCreating, creating }) => {
         formatImageEdit()
     }, [editData])
     const formatImageEdit = async () => {
-        if (editData.P_status === "1") {
+        if (editData?.P_status === "1") {
             setStatus(true)
         } else {
             setStatus(false)
@@ -25,12 +26,14 @@ const ProductEdit = ({ editData, setEditData, setCreating, creating }) => {
         if (_.get(editData, 'productColor')) {
             const formatData = await editData.productColor.map(item => {
                 const format = {
-                    imageUrl: item.pc_colorImage,
                     color: item.pc_color,
-                    hex: item.pc_hex
+                    hex: item.pc_hex,
+                    imageUrl: item.pc_colorImage,
+                    id: item.pc_id
                 }
                 return format
             })
+            setBackupImage(formatData)
             setColorImage(formatData)
         }
     }
@@ -43,11 +46,35 @@ const ProductEdit = ({ editData, setEditData, setCreating, creating }) => {
             return
         }
         setCreateLoading(true)
-
+        const addNew = _.differenceBy(colorImage, backupImage, 'imageUrl');
+        const deleteImage = _.differenceBy(backupImage, colorImage, 'imageUrl');
         const createData = {
             P_name: e.P_name,
             P_price: e.P_price ? e.P_price : 0,
             P_status: status === true ? 1 : 2
+        }
+        if (!_.isEmpty(addNew)) {
+            await await Promise.all(addNew.map(async (item) => {
+                if (!_.isEmpty(item)) {
+                    const color = {
+                        P_id: editData.P_id,
+                        pc_color: item.color,
+                        pc_hex: item.hex,
+                        pc_colorImage: item.imageUrl
+                    }
+                    await axiosData.createProductColor(color)
+                }
+            }))
+        }
+        if (!_.isEmpty(deleteImage)) {
+            await await Promise.all(deleteImage.map(async (item) => {
+                if (!_.isEmpty(item)) {
+                    const color = {
+                        pc_id: item.id
+                    }
+                    await axiosData.deleteProductColor(color)
+                }
+            }))
         }
         const data = await axiosData.updateProduct(createData, editData.P_id)
         if (data) {
@@ -55,13 +82,13 @@ const ProductEdit = ({ editData, setEditData, setCreating, creating }) => {
             setCreateLoading(false)
             resetForm()
             setColorImage()
-            setCreating(!creating)
             setEditData()
+            setCreating(!creating)
             return
         }
 
     }
-    const onChangeSwitch = (e) =>{
+    const onChangeSwitch = (e) => {
         setStatus(e)
     }
     if (createLoading || loadingData) {
