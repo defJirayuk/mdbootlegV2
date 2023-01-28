@@ -48,6 +48,10 @@ export function getProductColorById(param) {
     let path = '/productcolor/getProductColorById';
     return axiosMethodPost(path, param);
 };
+export function getProductColorByImage(param) {
+    let path = '/productcolor/getProductColorByImage';
+    return axiosMethodPost(path, param);
+};
 
 export function createProduct(param) {
     let path = '/product/addProduct';
