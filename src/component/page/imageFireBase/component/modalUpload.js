@@ -5,7 +5,7 @@ import { storage } from "../../../firebase/firebaseConfig";
 import { ref, uploadBytes } from "firebase/storage";
 import moment from "moment"
 import _ from "lodash"
-const ModalUpload = ({ setOpenModal, openModal }) => {
+const ModalUpload = ({ setOpenModal, openModal,setTricker,tricker }) => {
     const { Text } = Typography;
     const [notImg, setNotImg] = useState(false);
     const [form] = Form.useForm();
@@ -50,6 +50,7 @@ const ModalUpload = ({ setOpenModal, openModal }) => {
                 resetForm()
                 setPreview()
                 setOpenModal(false)
+                setTricker(!tricker)
                 return
             })
         } else {

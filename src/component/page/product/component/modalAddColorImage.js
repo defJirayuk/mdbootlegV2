@@ -1,10 +1,11 @@
 import { storage } from "../../../firebase/firebaseConfig";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { Row, Input, Button, Image, Modal, Form, Select, Alert, Col, Typography } from "antd";
-import { UploadOutlined, DeleteFilled } from '@ant-design/icons';
+import { ref, uploadBytes, getDownloadURL, listAll } from "firebase/storage";
+import { Row, Input, Button, Image, Modal, Form, Select, Alert, Col, Typography, Switch } from "antd";
+import { UploadOutlined, DeleteFilled, DownloadOutlined } from '@ant-design/icons';
 import { useState, useEffect } from "react";
 import _ from "lodash";
 import moment from "moment"
+import * as axiosData from '../../../service/service';
 
 const ModalAddImage = ({ colorImage, setColorImage }) => {
     const shirtData = [
@@ -28,9 +29,39 @@ const ModalAddImage = ({ colorImage, setColorImage }) => {
     const [form] = Form.useForm();
     const [fileImage, setFileImage] = useState()
     const [preview, setPreview] = useState()
+    const [status, setStatus] = useState(false);
     const [openModal, setOpenModal] = useState(false)
     const [notName, setNotName] = useState(false);
     const [notImg, setNotImg] = useState(false);
+    const [imageData, setImageData] = useState([]);
+
+    useEffect(() => {
+        const ListRef = ref(storage, "product/");
+        listAll(ListRef).then(async (data) => {
+            const getUrl = await await Promise.all(data.items.map(async (item) => {
+                const urlData = await getDownloadURL(item).then((url) => {
+                    return url
+                })
+                const newData = {
+                    url: urlData,
+                    path: item._location.path_
+                }
+                return newData
+            }))
+            const deleteUsed = await await Promise.all(getUrl.map(async (item) => {
+                const data = {
+                    image: item.url
+                }
+                const imageInDB = await axiosData.getProductColorByImage(data)
+                if (_.isEmpty(imageInDB)) {
+                    return item
+                } else {
+                    return
+                }
+            }))
+            setImageData(_.compact(deleteUsed))
+        })
+    }, [])
     useEffect(() => {
         if (!fileImage) {
             setPreview(undefined)
@@ -58,35 +89,32 @@ const ModalAddImage = ({ colorImage, setColorImage }) => {
         setFileImage(e.target.files[0])
     }
 
-    const uploadImage = (e) => {
-        if (e.P_color && fileImage && preview) {
+    const onSelectImage = () =>{
+        setNotImg(false)
+    }
+
+    const selectImageUpload = (e) => {
+        if (e.P_color && e.P_image2) {
             const findColor = shirtData.find(sd => sd.id === e.P_color)
-            const imageRef = ref(storage, `product/${fileImage.name}${moment()}`);
-            uploadBytes(imageRef, fileImage).then((data) => {
-                getDownloadURL(imageRef).then((url) => {
-                    const data = {
-                        color: findColor.color,
-                        hex: findColor.hex,
-                        imageUrl: url
-                    }
-                    if (colorImage) {
-                        const newdata = _.concat(colorImage, data)
-                        setColorImage(newdata)
-                        resetForm()
-                        setPreview()
-                        setOpenModal(false)
-                        return
-                    } else {
-                        setColorImage([data])
-                        resetForm()
-                        setPreview()
-                        setOpenModal(false)
-                        return
-                    }
-                })
-            })
+            const data = {
+                color: findColor.color,
+                hex: findColor.hex,
+                imageUrl: e.P_image2
+            }
+            if (colorImage) {
+                const newdata = _.concat(colorImage, data)
+                setColorImage(newdata)
+                resetForm()
+                setOpenModal(false)
+                return
+            } else {
+                setColorImage([data])
+                resetForm()
+                setOpenModal(false)
+                return
+            }
         } else {
-            if (_.isEmpty(fileImage) || _.isEmpty(preview)) {
+            if (_.isEmpty(e.P_image2)) {
                 setNotImg(true)
             };
             if (_.isEmpty(e.P_color)) {
@@ -95,8 +123,53 @@ const ModalAddImage = ({ colorImage, setColorImage }) => {
         }
     }
 
+    const uploadImage = (e) => {
+        if (!status) {
+            if (e.P_color && fileImage && preview) {
+                const findColor = shirtData.find(sd => sd.id === e.P_color)
+                const imageRef = ref(storage, `product/${fileImage.name}${moment()}`);
+                uploadBytes(imageRef, fileImage).then((data) => {
+                    getDownloadURL(imageRef).then((url) => {
+                        const data = {
+                            color: findColor.color,
+                            hex: findColor.hex,
+                            imageUrl: url
+                        }
+                        if (colorImage) {
+                            const newdata = _.concat(colorImage, data)
+                            setColorImage(newdata)
+                            resetForm()
+                            setPreview()
+                            setOpenModal(false)
+                            return
+                        } else {
+                            setColorImage([data])
+                            resetForm()
+                            setPreview()
+                            setOpenModal(false)
+                            return
+                        }
+                    })
+                })
+            } else {
+                if (_.isEmpty(fileImage) || _.isEmpty(preview)) {
+                    setNotImg(true)
+                };
+                if (_.isEmpty(e.P_color)) {
+                    setNotName(true)
+                }
+            }
+        } else {
+            selectImageUpload(e)
+        }
+
+    }
+
     const closeModal = () => {
         setOpenModal(false)
+    }
+    const onChangeSwitch = (e) => {
+        setStatus(e)
     }
     return (
         <>
@@ -135,12 +208,42 @@ const ModalAddImage = ({ colorImage, setColorImage }) => {
                                 :
                                 null
                             }
-                            <Form.Item
-                                label={"image"}
-                                name={"P_image"}
-                            >
-                                <Input id="inputFile" type="file" onChange={(e) => { onSelectFile(e) }} />
-                            </Form.Item>
+                            <Col span={24}>
+                                <Text>mode {!status ? `Upload` : `Instock`}</Text>
+                            </Col>
+                            <Switch
+                                checkedChildren={<DownloadOutlined />}
+                                unCheckedChildren={<UploadOutlined />}
+                                checked={status}
+                                onChange={onChangeSwitch}
+                            />
+                            {!status ?
+                                <Form.Item
+                                    label={"image"}
+                                    name={"P_image"}
+                                >
+                                    <Input id="inputFile" type="file" onChange={(e) => { onSelectFile(e) }} />
+                                </Form.Item>
+                                :
+                                <Form.Item
+                                    label={"image"}
+                                    name={"P_image2"}
+                                >
+                                    {_.isEmpty(imageData)?
+                                    <Text>No more image 2 u</Text>
+                                    :
+                                    <Select size="large" onChange={(e) => { onSelectImage(e) }}>
+                                        {imageData ? imageData.map(item => {
+                                            return <Option value={item.url}>
+                                                <Image style={{ width: '50px' }} src={item.url} preview={false} />
+                                                {item.url}
+                                            </Option>
+                                        })
+                                            : null}
+                                    </Select>
+                                    }
+                                </Form.Item>
+                            }
                             {preview ?
                                 <Row style={{ padding: '10px', border: '1px solid #1d1d1d', marginTop: '10px' }}>
                                     <Col span={7}>

@@ -1,14 +1,16 @@
-import { getStorage, ref, listAll, getDownloadURL } from "firebase/storage";
+import { storage } from "../../firebase/firebaseConfig";
+import { ref, listAll, getDownloadURL } from "firebase/storage";
 import { useEffect, useState } from "react";
 import TitleFireBase from "./component/titleFirebase";
 import CardList from "./component/cardList"
 import ModalUpload from "./component/modalUpload"
 import { Row } from 'antd';
 const FireBaseList = () => {
-    const storage = getStorage();
+    // const storage = getStorage();
     const [imageData, setImageData] = useState([]);
     const [page, setPage] = useState(0)
     const [openModal, setOpenModal] = useState(false);
+    const [tricker , setTricker]= useState(false);
     useEffect(() => {
         const ListRef = ref(storage, "product/");
         listAll(ListRef).then(async (data) => {
@@ -24,17 +26,18 @@ const FireBaseList = () => {
             }))
             setImageData(getUrl)
         })
-    })
+    }, [tricker])
+
     return (
         <>
-            <TitleFireBase setPage={setPage} page={page} setOpenModal={setOpenModal}  />
+            <TitleFireBase setPage={setPage} page={page} setOpenModal={setOpenModal} />
             <Row justify={"space-evenly"} style={{ marginLeft: '40px' }}>
                 {imageData ? imageData.map((item) => {
                     return <CardList imageData={item} />
                 })
                     : null}
             </Row>
-            <ModalUpload  setOpenModal={setOpenModal} openModal={openModal}/>
+            <ModalUpload setOpenModal={setOpenModal} openModal={openModal} tricker={tricker} setTricker={setTricker}/>
         </>
     )
 }
